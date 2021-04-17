@@ -42,16 +42,24 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  while (HC12.available())          // If HC-12 has data   
+  {        
+    Serial.write(HC12.read());      // Send the data to Serial monitor
+  }
+  while (Serial.available())        // If Serial monitor has data
+  {      
+    HC12.write(Serial.read());      // Send that data to HC-12
+  }
   int j;
   for(int i = 10; i <=100; i+=10){
     j = 100 - i;
     displayData(j, i);
-    delay(1000);
-  }
-  if (isHazardous) {
+  if (isHazardous(j,i)) {
     sendSignal();
   }
+    delay(1000);
+  }
+
 }
 
 void getSensorData(int &humidity, int &temperature) {
@@ -60,11 +68,16 @@ void getSensorData(int &humidity, int &temperature) {
 }
 
 bool isHazardous(int h, int t){
-  if (t < TEMP_HAZARD && h > HUMIDITY_HAZARD) {
+  if (t <= TEMP_HAZARD && h >= HUMIDITY_HAZARD) {
     //TODO wake-up microcontroller?
+    lcd.setCursor(0,1);
+    lcd.print("Hazardous");
+    Serial.print("Hazardous\n");
     return true;
   }
   else {
+    lcd.setCursor(0,1);
+    lcd.print("Not Hazardous");
     return false;
   }
 }
@@ -72,6 +85,7 @@ bool isHazardous(int h, int t){
 void displayData(int hum, int temp){
   lcd.clear();
   lcd.setCursor(0,0);
+  Serial.printf("H: %d   T: %d F \n",hum, temp);
   lcd.printf("H: %d   T: %d F",hum, temp);
 }
 
