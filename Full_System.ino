@@ -38,8 +38,11 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 
+#define SET_PIN 10
+
 #define TEMP_HAZARD 36
 #define HUMIDITY_HAZARD 90
+
 
 LiquidCrystal lcd(9, 8, 0, 1, 2, 3); // initialize the library with the numbers of the interface pins (Rs, E, DB4, DB5, DB6, DB7)
 SoftwareSerial HC12(7,6); //HC12 TX Pin, HC12 RX pin
@@ -50,6 +53,7 @@ void setup() {
   Serial.begin(9600);
   HC12.begin(9600);
   AM2320.begin();
+  checkHC12();
 }
 
 void loop() {
@@ -82,6 +86,28 @@ void loop() {
 //    delay(1000);
 //  }
 
+}
+
+void checkHC12(void)
+{
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+  Serial.println("Serial monitor available... OK");
+
+  Serial.print("HC12 available... ");  
+  if (HC12.isListening()) {
+    Serial.println("OK");
+  } else {
+    Serial.println("NOK");
+  }  
+  digitalWrite(SET_PIN, LOW);
+  HC12.write("AT");
+  delay(1000);
+  while(HC12.available())
+  {
+    Serial.write(HC12.read());    
+  }
 }
 
 void getSensorData(float &temperatureC, float &temperatureF, float &humidity) 
@@ -127,4 +153,10 @@ void displaySensorData(float tempC, float tempF, float hum)
   Serial.print("Humidity: ");
   Serial.print(hum);
   Serial.println(" %RH");
+
+  lcd.setCursor(0,0);
+  lcd.printf("T: %.0f F", tempF);
+  lcd.setCursor(8,0);
+  lcd.printf("H: %.0f", hum);
+ 
 }
