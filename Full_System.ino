@@ -61,7 +61,15 @@ void loop() {
   float temperatureF;
   float humidity;
   getSensorData(temperatureC, temperatureF, humidity);
+  
+//  temperatureF = 30;
+//  humidity = 100;
   displaySensorData(temperatureC, temperatureF, humidity);
+
+  if(isHazardous(temperatureF, humidity))
+  {
+    sendSignal();
+  }
   while (HC12.available())          // If HC-12 has data   
   {        
     Serial.write(HC12.read());      // Send the data to Serial monitor
@@ -75,16 +83,6 @@ void loop() {
 
   // Wait 2 seconds between readings:
   delay(2000);
-
-//  int j;
-//  for(int i = 10; i <=100; i+=10){
-//    j = 100 - i;
-//    displayData(j, i);
-//    if (isHazardous(j,i)) {
-//      sendSignal();
-//    }
-//    delay(1000);
-//  }
 
 }
 
@@ -117,7 +115,7 @@ void getSensorData(float &temperatureC, float &temperatureF, float &humidity)
   humidity = AM2320.readHumidity();
 }
 
-bool isHazardous(int h, int t)
+bool isHazardous(int t, int h)
 {
   if (t <= TEMP_HAZARD && h >= HUMIDITY_HAZARD) 
   {
@@ -137,6 +135,7 @@ bool isHazardous(int h, int t)
 
 void sendSignal() 
 {
+  digitalWrite(SET_PIN, HIGH);
   HC12.write("Something");
 }
 
