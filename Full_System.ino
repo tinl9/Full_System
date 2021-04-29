@@ -53,6 +53,7 @@ void setup() {
   Serial.begin(9600);
   HC12.begin(9600);
   AM2320.begin();
+  pinMode(SET_PIN, OUTPUT);
   checkHC12();
 }
 
@@ -100,8 +101,9 @@ void checkHC12(void)
     Serial.println("NOK");
   }  
   digitalWrite(SET_PIN, LOW);
-  HC12.write("AT");
-  delay(1000);
+  delay(100);
+  HC12.print("AT");
+  delay(100);
   while(HC12.available())
   {
     Serial.write(HC12.read());    
