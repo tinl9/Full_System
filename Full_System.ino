@@ -64,14 +64,18 @@ void loop() {
   lcd.clear();
   getSensorData(temperatureC, temperatureF, humidity);
   
-//  temperatureF = 30;
-//  humidity = 100;
+  temperatureF = 30;
+  humidity = 80;
   displaySensorData(temperatureC, temperatureF, humidity);
 
   if(isHazardous(temperatureF, humidity))
   {
     sendHazardSignal();
   }
+  else 
+  {
+    sendClearSignal();
+  }  
   while (HC12.available())          // If HC-12 has data   
   {        
     Serial.write(HC12.read());      // Send the data to Serial monitor
@@ -114,7 +118,7 @@ void checkHC12(void)
     
     if((char(incomingByte) != '\n') && (char(incomingByte) != '\r'))  //remove new line and carriage return characters
     {
-      Serial.println(incomingByte);      
+//      Serial.println(incomingByte);      
       HC12Status += char(incomingByte);  //concatenate to 'data'
     }       
   }
@@ -145,23 +149,30 @@ bool isHazardous(int t, int h)
   if (t <= TEMP_HAZARD && h >= HUMIDITY_HAZARD) 
   {
     //TODO wake-up microcontroller?
-    lcd.setCursor(0,1);
-    lcd.print("Hazard");
-    Serial.print("Hazardous\n");
     return true;
   }
-  else 
+  else
   {
-    lcd.setCursor(0,1);
-    lcd.print("Clear");
     return false;
   }
 }
 
 void sendHazardSignal() 
 {
+  lcd.setCursor(0,1);
+  lcd.print("Hazard");
+  Serial.print("Hazardous\n");  
   digitalWrite(SET_PIN, HIGH);  //transparent mode
   HC12.write("Hazard");
+}
+
+void sendClearSignal()
+{
+  lcd.setCursor(0,1);
+  lcd.print("Clear");
+  Serial.print("Clear\n");   
+  digitalWrite(SET_PIN,HIGH);
+  HC12.write("Clear");
 }
 
 // Print the temperature and humidity in the Serial Monitor:
