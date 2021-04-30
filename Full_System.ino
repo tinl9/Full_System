@@ -40,8 +40,8 @@
 
 #define SET_PIN 10
 
-#define TEMP_HAZARD 36
-#define HUMIDITY_HAZARD 90
+#define TEMP_HAZARD 65
+#define HUMIDITY_HAZARD 50
 
 
 LiquidCrystal lcd(9, 8, 0, 1, 2, 3); // initialize the library with the numbers of the interface pins (Rs, E, DB4, DB5, DB6, DB7)
@@ -64,8 +64,9 @@ void loop() {
   lcd.clear();
   getSensorData(temperatureC, temperatureF, humidity);
   
-  temperatureF = 30;
-  humidity = 80;
+//  temperatureF = 30;
+//  humidity = 95;
+
   displaySensorData(temperatureC, temperatureF, humidity);
 
   if(isHazardous(temperatureF, humidity))
@@ -94,10 +95,10 @@ void loop() {
 
 void checkHC12(void)
 {
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-  Serial.println("Serial monitor available... OK");
+//  while (!Serial) {
+//    ; // wait for serial port to connect. Needed for native USB port only
+//  }
+//  Serial.println("Serial monitor available... OK");
 
   Serial.print("HC12 available... ");  
 //  if (HC12.isListening()) {
@@ -163,7 +164,9 @@ void sendHazardSignal()
   lcd.print("Hazard");
   Serial.print("Hazardous\n");  
   digitalWrite(SET_PIN, HIGH);  //transparent mode
-  HC12.write("Hazard");
+  delay(100);
+  HC12.print("Hazard");
+  delay(100);
 }
 
 void sendClearSignal()
@@ -172,7 +175,9 @@ void sendClearSignal()
   lcd.print("Clear");
   Serial.print("Clear\n");   
   digitalWrite(SET_PIN,HIGH);
-  HC12.write("Clear");
+  delay(100);
+  HC12.print("Clear");
+  delay(100);
 }
 
 // Print the temperature and humidity in the Serial Monitor:
