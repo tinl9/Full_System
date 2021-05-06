@@ -1,4 +1,11 @@
-/* Setup HC12
+/*
+ * Transmitter
+ * Sends signal based on conditions received from sensor
+ * Displays relevant information such as temperature, humidity on LCD screen
+ * Performs checks on sensor and transceiver and displays errors, if any
+ */
+ 
+/* Setup HC12 (transceiver)
  * While pin headers are closest to you
  * From HC12 to Seeduino
  * Pin 1 to Power
@@ -25,7 +32,7 @@
  * A to Power
  * K to GND
  * 
- * AM2320
+ * AM2320 (temperature/humidity sensor)
  * Pin 1 to VCC
  * Pin 2 to pin 4 (with pullup) SDA
  * Pin 3 to GND
@@ -40,8 +47,8 @@
 
 #define SET_PIN 10
 
-#define TEMP_HAZARD 65
-#define HUMIDITY_HAZARD 50
+#define TEMP_HAZARD 36
+#define HUMIDITY_HAZARD 95
 
 
 LiquidCrystal lcd(9, 8, 0, 1, 2, 3); // initialize the library with the numbers of the interface pins (Rs, E, DB4, DB5, DB6, DB7)
@@ -65,7 +72,7 @@ void loop() {
   getSensorData(temperatureC, temperatureF, humidity);
   
 //  temperatureF = 30;
-//  humidity = 95;
+//  humidity = 96;
 
   displaySensorData(temperatureC, temperatureF, humidity);
 
@@ -95,6 +102,7 @@ void loop() {
 
 void checkHC12(void)
 {
+// using these lines of code will prevent the program from running unless you open the serial monitor
 //  while (!Serial) {
 //    ; // wait for serial port to connect. Needed for native USB port only
 //  }
@@ -113,17 +121,18 @@ void checkHC12(void)
   delay(100);
   HC12.print("AT");           //check transmission
   delay(100);
-  while(HC12.available())
+  
+  while(HC12.available())     //save transmission status
   {
     incomingByte = HC12.read();
     
     if((char(incomingByte) != '\n') && (char(incomingByte) != '\r'))  //remove new line and carriage return characters
     {
 //      Serial.println(incomingByte);      
-      HC12Status += char(incomingByte);  //concatenate to 'data'
+      HC12Status += char(incomingByte);  //concatenate status
     }       
   }
-
+  //check status and print to serial/lcd
   if(HC12Status == "OK")
   {
     Serial.println("OK");
@@ -145,6 +154,7 @@ void getSensorData(float &temperatureC, float &temperatureF, float &humidity)
   humidity = AM2320.readHumidity();
 }
 
+//determine hazardous conditions as set by variables TEMP_HAZARD and HUMIDITY_HAZARD
 bool isHazardous(int t, int h)
 {
   if (t <= TEMP_HAZARD && h >= HUMIDITY_HAZARD) 
